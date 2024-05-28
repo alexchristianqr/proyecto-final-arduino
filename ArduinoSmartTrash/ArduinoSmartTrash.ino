@@ -51,7 +51,7 @@ void setup() {
   // Modo del pin sensor infrarojo
   pinMode(ir, INPUT);
 
-  // pinMode(piezoBuzzer, OUTPUT);
+  pinMode(piezoBuzzer, OUTPUT);
 
   // Pines para el sensor de ultrasonido
   pinMode(ECHO, INPUT);
@@ -66,10 +66,19 @@ void setup() {
 }
 
 void loop() {
-  start();
-  /*tone(piezoBuzzer, 3000, 5);
-   delay(3000);
-   noTone(piezoBuzzer);*/
+  //start();
+
+  /*noTone(piezoBuzzer);
+  for (int i = 1; i <= 10; i++) {
+
+    delay(1000);
+    tone(piezoBuzzer, 1000, 50);
+
+
+    if (i > 5) {
+      noTone(piezoBuzzer);
+    }
+  }*/
 }
 
 void start() {
@@ -104,7 +113,7 @@ void alertas(float distancia) {
     Serial.print(" cm");
     Serial.println();
     digitalWrite(ledVerde, HIGH);  // Encendemos el LED verde
-    // tone(piezoBuzzer, 2000, 5);
+    tone(piezoBuzzer, 2000, 50);
 
   } else if (distancia > d10 && distancia < d20) {  // >10 AND <20
 
@@ -113,7 +122,7 @@ void alertas(float distancia) {
     Serial.print(" cm");
     Serial.println();
     digitalWrite(ledAmarillo, HIGH);  // Encendemos el LED amarillo
-    // tone(piezoBuzzer, 2500, 5);
+    tone(piezoBuzzer, 2500, 50);
 
   } else if (distancia <= d10) {  // <=10
 
@@ -122,7 +131,7 @@ void alertas(float distancia) {
     Serial.print(" cm");
     Serial.println();
     digitalWrite(ledRojo, HIGH);  // Encendemos el LED rojo
-    // tone(piezoBuzzer, 3000, 5);
+    tone(piezoBuzzer, 3000, 50);
   }
 }
 
