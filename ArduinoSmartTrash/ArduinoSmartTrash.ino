@@ -13,7 +13,7 @@ byte rgbVerde = 9;  // cambio de color según luz del ambiente
 
 int piezoBuzzer = 3;  // alarma sonido
 byte microServo = 4;  // controlador de la tapa
-byte pulsador = 2;    // pulsar para vaciar tacho
+int pulsador = 2;    // pulsar para vaciar tacho
 
 byte ir = 7;  // adentro (nivel)
 
@@ -68,7 +68,7 @@ void setup() {
 }
 
 void loop() {
-  // start();
+  start();
 }
 
 void start() {
@@ -81,7 +81,7 @@ void start() {
   // Apagar todos los LEDs
   apagarLEDs();
 
-  // Lanzar alerta si estamos dentro del rango de peligro
+  // Lanzar alerta si estamos dentro de la distancia deseada
   if (distancia <= d30) {
     alertas(distancia);  // Lanzamos alertas
   } else {
@@ -141,8 +141,6 @@ float calcularDistancia() {
   // Por eso se multiplica por 0.000001
   float tiempoEnSegundos = tiempo * 0.000001;  // Microsegundos
   float distancia = (tiempoEnSegundos * sonido) / 2.0;
-  // float distancia = tiempo / 58.2;
-  // float distancia = (tiempo / 2) * 0.034;
 
   Serial.print("distancia capturada: ");
   Serial.print(distancia);
@@ -166,16 +164,6 @@ void iniciarTrigger() {
 
   // Comenzamos poniendo el pin Trigger en estado bajo
   digitalWrite(TRIGGER, LOW);
-}
-
-void pruebaTachoLleno() {
-  for (int i = 0; i < 5; i++) {
-    abrirTacho();
-    delay(600);
-
-    cerrarTacho();
-    delay(600);
-  }
 }
 
 boolean tachoLleno() {
@@ -228,6 +216,9 @@ boolean pulsadorPresionado() {
   int valorPulsador = digitalRead(pulsador);
 
   if (valorPulsador == LOW) {
+    Serial.print("pulsador: ");
+    Serial.print(valorPulsador);
+    Serial.println();
     return false;
   } else {
     return true;
