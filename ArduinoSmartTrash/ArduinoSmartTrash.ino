@@ -36,6 +36,8 @@ void setup() {
   // Inicializar componentes
   Serial.begin(9600);
 
+  servo.write(0);
+
   servo.attach(microServo);
 
   // Modo de los pines LED
@@ -66,19 +68,7 @@ void setup() {
 }
 
 void loop() {
-  //start();
-
-  /*noTone(piezoBuzzer);
-  for (int i = 1; i <= 10; i++) {
-
-    delay(1000);
-    tone(piezoBuzzer, 1000, 50);
-
-
-    if (i > 5) {
-      noTone(piezoBuzzer);
-    }
-  }*/
+  // start();
 }
 
 void start() {
@@ -92,8 +82,10 @@ void start() {
   apagarLEDs();
 
   // Lanzar alerta si estamos dentro del rango de peligro
-  if (distancia < d30) {
+  if (distancia <= d30) {
     alertas(distancia);  // Lanzamos alertas
+  } else {
+    servo.write(0);
   }
 }
 
@@ -112,6 +104,7 @@ void alertas(float distancia) {
     Serial.print(d30);
     Serial.print(" cm");
     Serial.println();
+    abrirTacho();
     digitalWrite(ledVerde, HIGH);  // Encendemos el LED verde
     tone(piezoBuzzer, 2000, 50);
 
@@ -121,8 +114,10 @@ void alertas(float distancia) {
     Serial.print(d20);
     Serial.print(" cm");
     Serial.println();
+    abrirTacho();
     digitalWrite(ledAmarillo, HIGH);  // Encendemos el LED amarillo
     tone(piezoBuzzer, 2500, 50);
+
 
   } else if (distancia <= d10) {  // <=10
 
@@ -130,6 +125,7 @@ void alertas(float distancia) {
     Serial.print(d10);
     Serial.print(" cm");
     Serial.println();
+    abrirTacho();
     digitalWrite(ledRojo, HIGH);  // Encendemos el LED rojo
     tone(piezoBuzzer, 3000, 50);
   }
