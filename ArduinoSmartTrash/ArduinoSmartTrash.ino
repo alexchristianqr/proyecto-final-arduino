@@ -2,23 +2,23 @@
 #include <SoftwareSerial.h>
 
 // Pines LED
-byte ledVerde = 13;     // tacho con espacio
-byte ledAmarillo = 12;  // tapa abierta
-byte ledRojo = 8;       // tacho lleno
+int ledVerde = 13;     // tacho con espacio
+int ledAmarillo = 12;  // tapa abierta
+int ledRojo = 8;       // tacho lleno
 
 // Pines RGB
-byte rgbRojo = 11;
-byte rgbAzul = 10;
-byte rgbVerde = 9;  // cambio de color según luz del ambiente
+int rgbRojo = 11;
+int rgbAzul = 10;
+int rgbVerde = 9;  // cambio de color según luz del ambiente
 
 int piezoBuzzer = 3;  // alarma sonido
-byte microServo = 4;  // controlador de la tapa
+int microServo = 4;  // controlador de la tapa
 int pulsador = 2;    // pulsar para vaciar tacho
 
-byte ir = 7;  // adentro (nivel)
+int ir = 7;  // adentro (nivel)
 
 // Pines utilizados
-byte TRIGGER = 5;
+int TRIGGER = 5;
 int ECHO = 6;
 
 // Variables
