@@ -1,6 +1,5 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
-// #include <IRremote.h>
 
 // Pines LED
 int ledVerde = 13;     // Tacho con espacio
@@ -14,11 +13,6 @@ int rgbVerde = 9;  // Cambio de color según luz del ambiente
 
 int piezoBuzzer = 3;  // Alarma sonido
 int microServo = 4;   // Controlador de la tapa
-// int pulsador = 2;     // Pulsar para vaciar tacho
-
-/*const int ir = 7;  // adentro (nivel)
-IRrecv irrecv(ir);
-decode_results results;*/
 
 // Pines utilizados
 int TRIGGER = 5;
@@ -26,25 +20,15 @@ int ECHO = 6;
 
 // Variables
 Servo servo;
-int nivelTachoLleno = 3;  // El tacho no esta lleno
-unsigned long milisAct;   // Milisegundos
 
 // Constantes
 const float sonido = 34300.0;  // Velocidad del sonido en cm/s
-const float d30 = 15.0;        // Distancia de 30 centimetros: 10-infinito pintar rojo
-const float dCarton = 10.0;    // Distancia de 20 centimetros: 0-10 pintar amarillo
-const float dPapel = 5.0;      // Distancia de 10 centimetros: 0-5 pintar verde
-
-// Materiales
-/*const float PAPEL_GROSOR = 5.0;    // Groso promedio de papel
-const float CARTON_GROSOR = 10.0;  // Groso promedio de cartón*/
-
+const float dCarton = 10.0;    // Distancia de 10 centimetros: 5-10 pintar amarillo
+const float dPapel = 5.0;      // Distancia de 5 centimetros: 0-5 pintar verde
 
 void setup() {
   // Inicializar componentes
   Serial.begin(9600);
-  /*irrecv.enableIRIn();  // Inicializa el receptor IR
-  Serial.println("Listo para recibir señales IR");*/
 
   // Servo motor
   servo.write(180);
@@ -60,9 +44,6 @@ void setup() {
   pinMode(rgbVerde, OUTPUT);
   pinMode(rgbAzul, OUTPUT);
 
-  // Pin sensor infrarojo
-  // pinMode(ir, INPUT);
-
   // Pin buzzer sonido
   pinMode(piezoBuzzer, OUTPUT);
 
@@ -70,12 +51,7 @@ void setup() {
   pinMode(ECHO, INPUT);
   pinMode(TRIGGER, OUTPUT);
 
-  // Pin boton pulsador
-  // pinMode(pulsador, INPUT);
-
-  milisAct = 0;
   apagarLEDs();
-
   encenderLedRojo();
 }
 
