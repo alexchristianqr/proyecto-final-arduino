@@ -1,21 +1,24 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
+// #include <IRremote.h>
 
 // Pines LED
-int ledVerde = 13;     // tacho con espacio
-int ledAmarillo = 12;  // tapa abierta
-int ledRojo = 8;       // tacho lleno
+int ledVerde = 13;     // Tacho con espacio
+int ledAmarillo = 12;  // Tapa abierta
+int ledRojo = 8;       // Tacho lleno
 
 // Pines RGB
 int rgbRojo = 11;
 int rgbAzul = 10;
-int rgbVerde = 9;  // cambio de color según luz del ambiente
+int rgbVerde = 9;  // Cambio de color según luz del ambiente
 
-int piezoBuzzer = 3;  // alarma sonido
-int microServo = 4;  // controlador de la tapa
-int pulsador = 2;    // pulsar para vaciar tacho
+int piezoBuzzer = 3;  // Alarma sonido
+int microServo = 4;   // Controlador de la tapa
+int pulsador = 2;     // Pulsar para vaciar tacho
 
-int ir = 7;  // adentro (nivel)
+/*const int ir = 7;  // adentro (nivel)
+IRrecv irrecv(ir);
+decode_results results;*/
 
 // Pines utilizados
 int TRIGGER = 5;
@@ -32,43 +35,50 @@ const float d30 = 30.0;        // Distancia de 30 centimetros: pintar verde
 const float d20 = 20.0;        // Distancia de 20 centimetros: pintar amarillo
 const float d10 = 10.0;        // Distancia de 10 centimetros: pintar rojo
 
+// Materiales
+const float PAPEL_GROSOR = 5.0;    // Groso promedio de papel
+const float CARTON_GROSOR = 10.0;  // Groso promedio de cartón
+
+
 void setup() {
   // Inicializar componentes
   Serial.begin(9600);
+  /*irrecv.enableIRIn();  // Inicializa el receptor IR
+  Serial.println("Listo para recibir señales IR");*/
 
+  // Servo motor
   servo.write(0);
-
   servo.attach(microServo);
 
-  // Modo de los pines LED
+  // Pines LED
   pinMode(ledVerde, OUTPUT);
   pinMode(ledAmarillo, OUTPUT);
   pinMode(ledRojo, OUTPUT);
 
-  // Modo de los pines RGB
+  // Pines RGB
   pinMode(rgbRojo, OUTPUT);
   pinMode(rgbVerde, OUTPUT);
   pinMode(rgbAzul, OUTPUT);
 
-  // Modo del pin sensor infrarojo
-  pinMode(ir, INPUT);
+  // Pin sensor infrarojo
+  // pinMode(ir, INPUT);
 
+  // Pin buzzer sonido
   pinMode(piezoBuzzer, OUTPUT);
 
   // Pines para el sensor de ultrasonido
   pinMode(ECHO, INPUT);
   pinMode(TRIGGER, OUTPUT);
 
-  // Modo del pin boton pulsador
+  // Pin boton pulsador
   pinMode(pulsador, INPUT);
 
   milisAct = 0;
-
   apagarLEDs();
 }
 
 void loop() {
-  start();
+  //start();
 }
 
 void start() {
@@ -87,6 +97,48 @@ void start() {
   } else {
     servo.write(0);
   }
+}
+
+// Iniciar la secuencia del Trigger para comenzar a medir
+void iniciarTrigger() {
+  // Ponemos el Trigger en estado bajo y esperamos 2 ms
+  digitalWrite(TRIGGER, LOW);
+  delayMicroseconds(2);
+
+  // Ponemos el pin Trigger a estado alto y esperamos 10 ms
+  digitalWrite(TRIGGER, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIGGER, LOW);
+}
+
+// Calcular la distancia a la que se encuentra un objeto.
+float calcularDistancia() {
+
+  // La función pulseIn obtiene el tiempo que tarda en cambiar entre estados, en este caso a HIGH
+  unsigned long tiempo = pulseIn(ECHO, HIGH);
+
+  // Obtenemos la distancia en cm, hay que convertir el tiempo en segudos ya que está en microsegundos. Por eso se multiplica por 0.000001
+  float tiempoEnSegundos = tiempo * 0.000001;  // Microsegundos
+  float distancia = (tiempoEnSegundos * sonido) / 2.0;
+  // float distancia = (tiempo / 2) / 29.1;
+
+  Serial.print("distancia capturada: ");
+  Serial.print(distancia);
+  Serial.print(" cm");
+  Serial.println();
+
+  // Determinar si es papel o carton
+  /*if (distancia < PAPEL_GROSOR) {
+    Serial.println("Material: PAPEL");
+  } else if (distancia >= PAPEL_GROSOR && distancia < CARTON_GROSOR) {
+    Serial.println("Material: CARTON");
+  } else {
+    Serial.println("Material desconocido");
+  }*/
+
+  delay(1000);
+
+  return distancia;
 }
 
 // Apagar todos los LEDs
@@ -131,44 +183,10 @@ void alertas(float distancia) {
   }
 }
 
-// Calcular la distancia a la que se encuentra un objeto.
-float calcularDistancia() {
-
-  // La función pulseIn obtiene el tiempo que tarda en cambiar entre estados, en este caso a HIGH
-  unsigned long tiempo = pulseIn(ECHO, HIGH);
-
-  // Obtenemos la distancia en cm, hay que convertir el tiempo en segudos ya que está en microsegundos
-  // Por eso se multiplica por 0.000001
-  float tiempoEnSegundos = tiempo * 0.000001;  // Microsegundos
-  float distancia = (tiempoEnSegundos * sonido) / 2.0;
-
-  Serial.print("distancia capturada: ");
-  Serial.print(distancia);
-  Serial.print(" cm");
-  Serial.println();
-
-  delay(500);
-
-  return distancia;
-}
-
-// Iniciar la secuencia del Trigger para comenzar a medir
-void iniciarTrigger() {
-  // Ponemos el Trigger en estado bajo y esperamos 2 ms
-  digitalWrite(TRIGGER, LOW);
-  delayMicroseconds(2);
-
-  // Ponemos el pin Trigger a estado alto y esperamos 10 ms
-  digitalWrite(TRIGGER, HIGH);
-  delayMicroseconds(10);
-
-  // Comenzamos poniendo el pin Trigger en estado bajo
-  digitalWrite(TRIGGER, LOW);
-}
-
 boolean tachoLleno() {
-  Serial.println(digitalRead(ir));
-  if (digitalRead(ir) == HIGH) {
+  //Serial.println(digitalRead(ir));
+  int irDetected = 0; // digitalRead(ir) 
+  if (irDetected == HIGH) {
     Serial.println("IR no detectado...");
     nivelTachoLleno = 0;
     return false;
