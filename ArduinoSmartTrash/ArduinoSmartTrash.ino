@@ -14,7 +14,7 @@ int rgbVerde = 9;  // Cambio de color según luz del ambiente
 
 int piezoBuzzer = 3;  // Alarma sonido
 int microServo = 4;   // Controlador de la tapa
-int pulsador = 2;     // Pulsar para vaciar tacho
+// int pulsador = 2;     // Pulsar para vaciar tacho
 
 /*const int ir = 7;  // adentro (nivel)
 IRrecv irrecv(ir);
@@ -31,13 +31,13 @@ unsigned long milisAct;   // Milisegundos
 
 // Constantes
 const float sonido = 34300.0;  // Velocidad del sonido en cm/s
-const float d30 = 30.0;        // Distancia de 30 centimetros: pintar verde
-const float d20 = 20.0;        // Distancia de 20 centimetros: pintar amarillo
-const float d10 = 10.0;        // Distancia de 10 centimetros: pintar rojo
+const float d30 = 15.0;        // Distancia de 30 centimetros: 10-infinito pintar rojo
+const float dCarton = 10.0;    // Distancia de 20 centimetros: 0-10 pintar amarillo
+const float dPapel = 5.0;      // Distancia de 10 centimetros: 0-5 pintar verde
 
 // Materiales
-const float PAPEL_GROSOR = 5.0;    // Groso promedio de papel
-const float CARTON_GROSOR = 10.0;  // Groso promedio de cartón
+/*const float PAPEL_GROSOR = 5.0;    // Groso promedio de papel
+const float CARTON_GROSOR = 10.0;  // Groso promedio de cartón*/
 
 
 void setup() {
@@ -47,7 +47,7 @@ void setup() {
   Serial.println("Listo para recibir señales IR");*/
 
   // Servo motor
-  servo.write(0);
+  servo.write(180);
   servo.attach(microServo);
 
   // Pines LED
@@ -71,17 +71,20 @@ void setup() {
   pinMode(TRIGGER, OUTPUT);
 
   // Pin boton pulsador
-  pinMode(pulsador, INPUT);
+  // pinMode(pulsador, INPUT);
 
   milisAct = 0;
   apagarLEDs();
+
+  encenderLedRojo();
 }
 
 void loop() {
-  //start();
+  // startSmartTrash();
 }
 
-void start() {
+// Iniciar tacho de basura inteligente
+void startSmartTrash() {
   // Preparar el sensor de ultrasonidos
   iniciarTrigger();
 
@@ -92,10 +95,11 @@ void start() {
   apagarLEDs();
 
   // Lanzar alerta si estamos dentro de la distancia deseada
-  if (distancia <= d30) {
+  if (distancia <= dCarton) {
     alertas(distancia);  // Lanzamos alertas
   } else {
-    servo.write(0);
+    cerrarTacho();
+    encenderLedRojo();
   }
 }
 
@@ -145,123 +149,38 @@ float calcularDistancia() {
 void apagarLEDs() {
   digitalWrite(ledVerde, LOW);
   digitalWrite(ledAmarillo, LOW);
-  digitalWrite(ledRojo, LOW);
 }
 
 // Comprobar si hay que lanzar alguna alerta visual o sonora
 void alertas(float distancia) {
-  if (distancia >= d20 && distancia < d30) {  // >=20 and <30
-
-    Serial.print("d30: ");
-    Serial.print(d30);
+  if (distancia >= 0 && distancia <= dPapel) {  // >=0 && <=5
+    apagarLedRojo();
+    Serial.print("dPapel: ");
+    Serial.print(dPapel);
     Serial.print(" cm");
     Serial.println();
+    encenderSoloLedAmarillo();  // Encendemos el LED amarillo
     abrirTacho();
-    digitalWrite(ledVerde, HIGH);  // Encendemos el LED verde
-    tone(piezoBuzzer, 2000, 50);
-
-  } else if (distancia > d10 && distancia < d20) {  // >10 AND <20
-
-    Serial.print("d20: ");
-    Serial.print(d20);
-    Serial.print(" cm");
-    Serial.println();
-    abrirTacho();
-    digitalWrite(ledAmarillo, HIGH);  // Encendemos el LED amarillo
     tone(piezoBuzzer, 2500, 50);
-
-
-  } else if (distancia <= d10) {  // <=10
-
-    Serial.print("d10: ");
-    Serial.print(d10);
+  } else if (distancia > dPapel && distancia <= dCarton) {  // >5 && <= 10
+    apagarLedRojo();
+    Serial.print("dCarton: ");
+    Serial.print(dCarton);
     Serial.print(" cm");
     Serial.println();
+    encenderSoloLedVerde();  // Encendemos el LED verde
     abrirTacho();
-    digitalWrite(ledRojo, HIGH);  // Encendemos el LED rojo
-    tone(piezoBuzzer, 3000, 50);
+    tone(piezoBuzzer, 2000, 50);
   }
-}
-
-boolean tachoLleno() {
-  //Serial.println(digitalRead(ir));
-  int irDetected = 0; // digitalRead(ir) 
-  if (irDetected == HIGH) {
-    Serial.println("IR no detectado...");
-    nivelTachoLleno = 0;
-    return false;
-  } else {
-    Serial.println("IR detectado...");
-    nivelTachoLleno++;
-  }
-
-  if (nivelTachoLleno == 1) {
-    milisAct = millis();
-  }
-
-  if (millis() - milisAct >= 5000) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-void alarma() {
-  cerrarTacho();
-
-  digitalWrite(ledVerde, LOW);
-  digitalWrite(ledRojo, HIGH);
-
-  // Mientras el pulsador haya sido presionado
-  while (!pulsadorPresionado()) {
-    Serial.println("Pulsador: FALSE");
-
-    tone(piezoBuzzer, 440, 300);
-    noTone(piezoBuzzer);
-    tone(piezoBuzzer, 300, 440);
-  }
-
-  vaciarTachoLleno();
-  Serial.println("Pulsador: OK");
-}
-
-void cerrarTacho() {
-  servo.write(180);
-  delay(600);
-}
-
-boolean pulsadorPresionado() {
-  int valorPulsador = digitalRead(pulsador);
-
-  if (valorPulsador == LOW) {
-    Serial.print("pulsador: ");
-    Serial.print(valorPulsador);
-    Serial.println();
-    return false;
-  } else {
-    return true;
-  }
-}
-
-void vaciarTachoLleno() {
-  digitalWrite(ledVerde, HIGH);
-  digitalWrite(ledRojo, HIGH);
-
-  abrirTacho();
-
-  while (pulsadorPresionado()) {
-    darkvioletRGB();
-    Serial.println("Vaciando el tacho lleno...");
-  }
-
-  digitalWrite(ledRojo, LOW);
-  apagarRGB();
-
-  cerrarTacho();
 }
 
 void abrirTacho() {
   servo.write(90);
+  delay(600);
+}
+
+void cerrarTacho() {
+  servo.write(180);
   delay(600);
 }
 
@@ -277,58 +196,22 @@ void magentaRGB() {
   digitalWrite(rgbAzul, 255);
 }
 
-void darkvioletRGB() {
-  digitalWrite(rgbRojo, 148);
-  digitalWrite(rgbVerde, 0);
-  digitalWrite(rgbAzul, 211);
-}
-
-void amarilloRGB() {
-  digitalWrite(rgbRojo, 255);
-  digitalWrite(rgbVerde, 255);
-  digitalWrite(rgbAzul, 0);
-}
-
-void testSetup() {
-  // pinMode(piezoBuzzer, OUTPUT); // Descomentar para hacer sonido infinito
-  // pruebaTachoLleno();  // Descomentar para probar
-}
-
-void testLoop() {
-  // Prueba pines LED
-  /*digitalWrite(ledVerde, HIGH);
-  delay(1000);
-  digitalWrite(ledVerde, LOW);
-  delay(1000);
-  digitalWrite(ledAmarillo, HIGH);
-  delay(1000);
-  digitalWrite(ledAmarillo, LOW);
-  delay(1000);
+void encenderLedRojo() {
   digitalWrite(ledRojo, HIGH);
-  delay(1000);
+}
+
+void apagarLedRojo() {
   digitalWrite(ledRojo, LOW);
-  delay(1000);*/
+}
 
-  // Prueba pines RGB
-  /*digitalWrite(rgbRojo, HIGH);
-  delay(1000);
-  digitalWrite(rgbRojo, LOW);
-  delay(1000);
-  digitalWrite(rgbVerde, HIGH);
-  delay(1000);
-  digitalWrite(rgbVerde, LOW);
-  delay(1000);
-  digitalWrite(rgbAzul, HIGH);
-  delay(1000);
-  digitalWrite(rgbAzul, LOW);
-  delay(1000);*/
+void encenderSoloLedAmarillo() {
+  apagarLedRojo();
+  digitalWrite(ledVerde, LOW);
+  digitalWrite(ledAmarillo, HIGH);
+}
 
-  // Prueba sonido piezobuzzer y pulsador
-  //alarma();
-
-
-  // Prueba tachito lleno
-  /*if (tachoLleno()) {
-    alarma();
-  }*/
+void encenderSoloLedVerde() {
+  apagarLedRojo();
+  digitalWrite(ledAmarillo, LOW);
+  digitalWrite(ledVerde, HIGH);
 }
